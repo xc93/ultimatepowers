@@ -26,6 +26,8 @@ Two modes — confirm which one applies before enumerating targets:
 | **Whole-target** | Every function and every loop of the named files. FVK's default; use for standalone or deep formalization. |
 | **Diff-scoped** | Only the functions/loops/branches a diff touches, plus any function whose contract a touched function's proof must invoke. The ultimatepowers review default — an extension over upstream FVK, which is whole-project only. |
 
+**Diff-scoped expansion rule:** a touched function's proof must invoke the contract of every function it calls within the analyzed body, so those callees enter scope **contract-only** — state their claim so the caller's proof can invoke it, but do not re-verify their bodies unless the diff also touched them. Expansion stops at calls with no in-repo definition (stdlib/builtins): model their documented behavior as Step 2 semantics rules instead of giving them contracts.
+
 ## The Workflow
 
 Create a TodoWrite entry for each numbered step.
@@ -36,7 +38,7 @@ Enumerate every in-scope function and loop. For each, infer the *intended* behav
 
 Intent evidence priority order: plan/spec docs under `docs/ultimatepowers/` → commit messages → code comments/docstrings/tests.
 
-Default is **intent-spec mode**: formalize the intended behavior and check the code against it. The *as-built* reading (formalizing whatever the code happens to do) is a secondary note used only when intent is unavailable — and say so when you fall back to it.
+Default is **intent-spec mode**: formalize the intended behavior and check the code against it. The *as-built* reading (formalizing whatever the code happens to do) is a secondary note used only when intent is unavailable — and say so when you fall back to it. The switch fires only when none of the evidence sources yields a behavioral claim (names and type signatures alone do not count); then formalize as-built and label the spec note as-built.
 
 **Intent↔code divergence is exactly what becomes a finding. Missing or contradicted intent is reported as a finding, never silently assumed.**
 
@@ -113,7 +115,7 @@ Required coverage — check every item for every in-scope function:
 
 **Stuck semantics = runtime exception.** A rule guard that cannot fire is the formal mirror of the crash — a division rule requiring `I2 =/=Int 0` that cannot fire IS the ZeroDivisionError.
 
-Report **positive findings** (a guard that enforces the spec's precondition is the code doing the right thing) and **deliberate non-findings** (stated because a reviewer will ask, with executed evidence where possible). Deep model: `examples/02-sum-up/FINDINGS.md` in grosu/formal-verification-kit.
+Report **positive findings** (a guard that enforces the spec's precondition is the code doing the right thing) and **deliberate non-findings** (stated because a reviewer will ask, with executed evidence where possible). Deep model: `grosu/formal-verification-kit/examples/02-sum-up/FINDINGS.md`.
 
 ## Finding Classification Taxonomy
 
@@ -143,10 +145,10 @@ Tag every finding with exactly one classification:
 
 ## Output Contract
 
-1. **Claims** — fenced K: one reachability claim per function, one circularity per loop/recursive function.
-2. **Spec note** (SPEC.md-style) — per function/loop, in plain English: precondition, postcondition, side conditions, how the proof will compose, which lemmas will be needed, fragment scope, status label. Deep model: `examples/02-sum-up/SPEC.md` in grosu/formal-verification-kit.
+1. **Claims** — fenced K: one reachability claim per function, one circularity per loop/recursive function. A function containing a loop needs **both** artifacts: its function claim (Step 3) **and** the loop's circularity (Step 4).
+2. **Spec note** (SPEC.md-style) — per function/loop, in plain English: precondition, postcondition, side conditions, how the proof will compose, which lemmas will be needed, fragment scope, status label. Deep model: `grosu/formal-verification-kit/examples/02-sum-up/SPEC.md`.
 3. **Findings** — FINDINGS.md-style content per the format above.
 
-Status label is always `constructed` at this stage: the contracts are stated, no proof has been constructed, and nothing is machine-checked.
+Status label is always `constructed` at this stage — upstream's own spec-stage status line: specs "**constructed, not machine-checked**". Here `constructed` qualifies the *claims*: they are stated via constructed symbolic reasoning, no proof has been constructed yet, and nothing is machine-checked; the proof-level sense of `constructed` (a proof written and reviewed) is applied later, by the verification stage. When the claims and findings are complete, proof construction proceeds via `ultimatepowers:verifying-specs`, which gates on these artifacts existing.
 
 *Derived from grosu/formal-verification-kit (MIT, Copyright (c) 2026 Grigore Rosu). See LICENSE and README credits.*

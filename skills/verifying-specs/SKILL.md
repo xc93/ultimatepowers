@@ -24,7 +24,7 @@ Work claim by claim:
 - **Symbolic execution.** Drive `<k>` with the semantics rules; the `seqstrict` heating/cooling micro-steps are the manual lookup/add/compare steps of a paper proof. Chain steps via Transitivity; carry untouched cells, bindings, and constraints by framing (`...`).
 - **Circularity discharge by guarded coinduction.** Every claim in the module is a hypothesis, usable only after ≥1 genuine `=>⁺` step (guard evaluation earns it). Case-split on the guard (`#Or`): the body-taken branch invokes the circularity on the shifted state (e.g. `{S := S+I, I := I+1}`) with the precondition re-checked; the exit branch pins the counter (e.g. `I = N+1`) and the closed form collapses to the empty sum. Both branches must land on the claimed post-state. Recursion is the same move — guardedness is paid by the `call` step, the case split is base vs recursive branch.
 - **Arithmetic VCs via Consequence.** Linear facts (`N ≥ 0 ⇒ 1 ≤ N+1`, `I ≤ N ⇒ I+1 ≤ N+1`, zero-factor exits) → the Z3 tier. Symbolic products, truncating `/Int`, and map equalities → `[simplification]` lemmas (the canonical pair: exact-halving and map-extensionality). Name each lemma you introduce; you own its soundness.
-- **Compose the function proof by Transitivity.** `def` files the function → `call` binds params in a fresh scope → body init → loop via its circularity used as a lemma (instantiated at entry, precondition discharged) → `return` pops the frame. Result: `A ⊢ φ_pre ⇒ φ_post`.
+- **Compose the function proof by Transitivity.** `def` files the function → `call` binds params in a fresh scope → body init (the assignment statements execute symbolically to reach the loop-entry store: `s = 0` drives `s |-> (_ => 0)`, `i = 1` drives `i |-> (_ => 1)`) → loop via its circularity used as a lemma (instantiated at that entry store, e.g. `{S := 0, I := 1}`, precondition discharged) → `return` pops the frame. Result: `A ⊢ φ_pre ⇒ φ_post`.
 - **Scope.** Partial correctness by default. The termination upgrade is a decreasing measure (bounded below, strictly decreasing per iteration), stated and discharged only when requested. Always state which one was established.
 
 ## Failure Is Data
@@ -36,11 +36,13 @@ If construction fails or gets stuck — a VC won't discharge, a side condition m
 | **Correctness gap** | A code bug | Report with a concrete `input → observed vs expected`, with full confidence, prominently |
 | **Capability gap** | A VC beyond the bundled tier — inductive predicates, multisets, structural induction | State as an explicit `[ESCALATION BOUNDARY]` obligation; route by the foundations escalation table |
 
-A capability gap is **never** admitted as `[trusted]` — that fakes confidence the kit does not have — and it is never reported as a code bug: it is a limit of the kit, not a defect in the code. When open `[ESCALATION BOUNDARY]` obligations remain, the artifact's status label is `constructed (escalation-bounded)`.
+A capability gap is **never** admitted as `[trusted]` — that fakes confidence the kit does not have — and it is never reported as a code bug: it is a limit of the kit, not a defect in the code.
+
+Mixed proofs are normal: when some branches close and some VCs stick, keep everything that was established and classify each stuck VC individually by the table above — a partial proof is still evidence. The label then follows from what remains open: a clean construction (all VCs discharged, no open obligations) is `constructed`; open `[ESCALATION BOUNDARY]` obligations make the artifact `constructed (escalation-bounded)`; only an actual `kprove` run returning `#Top` yields `machine-checked`.
 
 ## Honesty Gate
 
-Mandatory — apply before reporting anything:
+Mandatory — apply before emitting any status label or final output:
 
 - Every artifact is labeled `constructed, not machine-checked`. Never claim confidence the un-machine-checked proof doesn't have.
 - The findings do NOT depend on machine-checking — report those with full confidence.
