@@ -1,6 +1,6 @@
 # Ultimatepowers
 
-Ultimatepowers is superpowers' complete software development methodology — composable skills plus the session-start instructions that make your coding agent actually use them — with K-notation formal verification fused into its review pipeline. The formal method is digested from the formal-verification-kit (FVK): contracts and proof sketches written in K notation, never an executed toolchain. Formal analysis runs automatically during every code review; you don't ask for it. The UX is otherwise identical to superpowers — same skills, same workflow, no new commands.
+Ultimatepowers is the complete software development methodology from superpowers, extended with K-notation formal verification fused into its review pipeline — composable skills plus the session-start instructions that make your coding agent actually use them. The formal method is digested from the formal-verification-kit (FVK): contracts and proof sketches written in K notation, never an executed toolchain. Formal analysis runs automatically during every code review; you don't ask for it. The UX is otherwise identical to superpowers — same skills, same workflow, no new commands.
 
 > **⚠️ Do not install ultimatepowers alongside superpowers.** Ultimatepowers bundles every superpowers skill under its own namespace. Installing both gives you duplicate SessionStart hooks, two competing bootstraps, and identically-named skills. Uninstall superpowers first.
 
@@ -18,20 +18,20 @@ Because the skills trigger automatically, you don't need to do anything special.
 
 Installation differs by harness. If you use more than one, install ultimatepowers separately for each.
 
-The canonical repository URL is `https://github.com/xc-math/ultimatepowers`. If this repo is hosted elsewhere, substitute that URL — it appears only here, in the manifests, and in `.opencode/INSTALL.md`.
+The canonical repository URL is `https://github.com/xc-math/ultimatepowers`. It appears in this README's install commands, the platform manifests, and `.opencode/INSTALL.md`; if hosting elsewhere, it is one search-and-replace away.
 
 ### Claude Code
 
 - Register the marketplace and install:
 
-  ```
+  ```text
   /plugin marketplace add xc-math/ultimatepowers
   /plugin install ultimatepowers@ultimatepowers-dev
   ```
 
 - Or from a local clone:
 
-  ```
+  ```text
   /plugin marketplace add /path/to/ultimatepowers
   /plugin install ultimatepowers@ultimatepowers-dev
   ```
@@ -74,26 +74,28 @@ Follow `.opencode/INSTALL.md`: add the plugin array entry `ultimatepowers@git+ht
 
 ## Delta surface (edited upstream files — for future rebases against superpowers)
 
+These are the files that differ from upstream obra/superpowers — consult this list when rebasing onto a newer superpowers.
+
 - **Modified:** `skills/requesting-code-review/SKILL.md`, `skills/subagent-driven-development/SKILL.md`, `skills/using-superpowers/SKILL.md`, `skills/using-superpowers/references/gemini-tools.md`, `hooks/session-start` (rebrand only), all 6 manifests (`.claude-plugin/plugin.json`, `.claude-plugin/marketplace.json`, `.codex-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `gemini-extension.json`, `package.json`), `.version-bump.json`, `CLAUDE.md`, `.opencode/INSTALL.md`, `LICENSE` (copyright additions), plus mechanical namespace/path rebrand across `skills/`, `hooks/`, `tests/`.
 - **Added:** `skills/formal-reasoning-foundations/`, `skills/formalizing-code/`, `skills/verifying-specs/`, `skills/formal-code-review/`, `skills/requesting-code-review/formal-reviewer.md`, `skills/subagent-driven-development/formal-verification-reviewer-prompt.md`, `scripts/check-structure.sh`.
 - **Renamed:** `.opencode/plugins/superpowers.js` → `ultimatepowers.js`, `assets/superpowers-small.svg` → `ultimatepowers-small.svg`.
 - **Removed (vs upstream):** upstream `docs/`, `RELEASE-NOTES.md`, `.github/`, `CODE_OF_CONDUCT.md`, `scripts/sync-to-codex-plugin.sh`, `tests/codex-plugin-sync/`.
 
-## The Basic Workflow
+## The basic workflow
 
-1. **brainstorming** — Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves a design document.
+1. **`brainstorming`** — Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves a design document.
 
-2. **using-git-worktrees** — Activates after design approval. Creates an isolated workspace on a new branch, runs project setup, verifies a clean test baseline.
+2. **`using-git-worktrees`** — Activates after design approval. Creates an isolated workspace on a new branch, runs project setup, verifies a clean test baseline.
 
-3. **writing-plans** — Activates with an approved design. Breaks work into bite-sized tasks; every task has exact file paths, complete code, verification steps.
+3. **`writing-plans`** — Activates with an approved design. Breaks work into bite-sized tasks; every task has exact file paths, complete code, verification steps.
 
-4. **subagent-driven-development** or **executing-plans** — Activates with a plan. Dispatches a fresh subagent per task with staged review (spec compliance first, then code quality + formal verification in parallel), or executes in batches with human checkpoints.
+4. **`subagent-driven-development`** or **`executing-plans`** — Activates with a plan. Dispatches a fresh subagent per task with staged review (spec compliance first, then code quality + formal verification in parallel), or executes in batches with human checkpoints.
 
-5. **test-driven-development** — Activates during implementation. Enforces RED-GREEN-REFACTOR: write a failing test, watch it fail, write minimal code, watch it pass, commit.
+5. **`test-driven-development`** — Activates during implementation. Enforces RED-GREEN-REFACTOR: write a failing test, watch it fail, write minimal code, watch it pass, commit.
 
-6. **requesting-code-review** — activates between tasks. Dispatches conventional + formal reviewers in parallel; merged report; Critical from either blocks.
+6. **`requesting-code-review`** — Activates between tasks. Dispatches conventional + formal reviewers in parallel; merged report; Critical from either blocks.
 
-7. **finishing-a-development-branch** — Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up the worktree.
+7. **`finishing-a-development-branch`** — Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up the worktree.
 
 The agent checks for relevant skills before any task. These are mandatory workflows, not suggestions.
 
@@ -149,4 +151,4 @@ The formal method stands on this published work:
 - Chen, Peña, Rodrigues, Roșu & Trinh, *Unified fixpoint reasoning* (OOPSLA 2020)
 - K Framework Tutorial 1, Lesson 22
 
-**License:** MIT (see LICENSE — retains both upstream copyright notices).
+**License:** MIT (see [LICENSE](LICENSE) — retains both upstream copyright notices).
