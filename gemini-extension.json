@@ -1,0 +1,6 @@
+{
+  "name": "ultimatepowers",
+  "description": "Core skills library with built-in formal verification: TDD, debugging, collaboration patterns, and K-notation formal code review",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md"
+}

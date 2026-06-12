@@ -1,0 +1,6 @@
+{
+  "name": "ultimatepowers",
+  "version": "1.0.0",
+  "type": "module",
+  "main": ".opencode/plugins/ultimatepowers.js"
+}

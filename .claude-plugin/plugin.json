@@ -1,0 +1,10 @@
+{
+  "name": "ultimatepowers",
+  "description": "Superpowers core skills library fused with automatic K-notation formal verification in code review. Derived from obra/superpowers and grosu/formal-verification-kit.",
+  "version": "1.0.0",
+  "author": { "name": "ultimatepowers maintainers", "email": "xc.math@gmail.com" },
+  "homepage": "https://github.com/xc-math/ultimatepowers",
+  "repository": "https://github.com/xc-math/ultimatepowers",
+  "license": "MIT",
+  "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows", "formal-verification", "k-framework", "matching-logic"]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "ultimatepowers-dev",
+  "description": "Development marketplace for the ultimatepowers skills library",
+  "owner": { "name": "ultimatepowers maintainers", "email": "xc.math@gmail.com" },
+  "plugins": [
+    {
+      "name": "ultimatepowers",
+      "description": "Superpowers core skills library fused with automatic K-notation formal verification in code review. Derived from obra/superpowers and grosu/formal-verification-kit.",
+      "version": "1.0.0",
+      "source": "./",
+      "author": { "name": "ultimatepowers maintainers", "email": "xc.math@gmail.com" }
+    }
+  ]
+}
