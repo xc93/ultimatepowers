@@ -84,7 +84,7 @@ assert_contains "$output" "PROJECT_SKILL_MARKER_67890" "native skill tool loaded
 
 # Test 3: Test bundled ultimatepowers skill loading
 echo ""
-echo "Test 3: Testing native skill tool with a ultimatepowers skill..."
+echo "Test 3: Testing native skill tool with an ultimatepowers skill..."
 echo "  Running opencode with brainstorming skill..."
 
 run_opencode output "$TEST_HOME/test-project" "Call the skill tool with name \"brainstorming\". Then tell me the loaded skill title."
