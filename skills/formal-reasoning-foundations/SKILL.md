@@ -7,7 +7,7 @@ description: Use when writing or reading K-notation reachability claims, circula
 
 ## Overview
 
-K is used here as **notation for rigorous reasoning, not as a tool**: no K toolchain is ever run. The value is disciplined symbolic reasoning — real K syntax, Z3-dischargeable side conditions — written so the designed-in escape hatch to genuine machine-checking (`kompile`/`kprove`) stays open. Everything produced this way is labeled `constructed`, never `machine-checked`.
+K is used here as **notation for rigorous reasoning, not as a tool**: no K toolchain is ever run. This is disciplined symbolic reasoning — real K syntax, Z3-dischargeable side conditions — written so the designed-in escape hatch to genuine machine-checking (`kompile`/`kprove`) stays open. Everything produced this way is labeled `constructed`, never `machine-checked`.
 
 The notation works because matching logic is **one logic for both terms and formulas: a pattern denotes a set** (a subset of the model `M`). A term like `5` or `cons(x, xs)` is a pattern whose set is a singleton; a formula like `x = 5` denotes `M` (true) or `∅` (false) — terms and formulas differ only in how big their set is. Connectives are set operations: `∧` is intersection, `∨` is union, `¬` is complement, `∃x` is union over witnesses. That is why a K claim can hold a program configuration and a logical constraint in the same formula — `#And`/`#Or`/`#Not`/`#Exists`/`#Equals` in a K claim are literally matching-logic connectives.
 
@@ -31,10 +31,11 @@ The working core. Each element, with its gloss:
 - **`~>`** — "then": the cons of the computation list in `<k>`. **`.K`** — the empty computation; `=> .K` means "runs to completion".
 - **Store rewrites** `x |-> (OLD => NEW)` — variable `x` starts as `OLD` and ends as `NEW`, before/after per variable.
 - **Untouched bindings** (`n |-> N:Int`) constrain the inputs without asserting change.
-- **`...`** — framing: "the rest of this cell is unchanged/irrelevant". `<k> X => V ... </k>` rewrites only the head; `<store> ... X |-> V ... </store>` matches anywhere in the map. This is the frame condition, for free.
+- **`...` in `<k>`** — frames the rest of the computation: the trailing `...` in `<k> X => V ... </k>` means only the head is rewritten; the `~>`-work after it is unchanged/irrelevant.
+- **`...` in a map cell** — frames the other bindings: `<store> ... X |-> V ... </store>` matches `X |-> V` anywhere in the map, leaving every other binding unconstrained — how the count-down loop shape (`references/claim-shapes.md`, 02/03 block) frames `n` out of its claim entirely. Both are the frame condition, for free.
 - **`requires`** — the precondition on the symbolic inputs. **`ensures`** — the postcondition: constraints that must hold after execution, with `?`-prefixed existentials for "some value exists" (`?C:Int` in the configuration plus `ensures (?C ==Int A) orBool (?C ==Int B)`; `<funcs> .Map => ?_:Map` is the idiom for "ends in some unconstrained map").
 - **`[all-path]`** — every execution path from LHS reaches RHS (`[one-path]`: some path does).
-- **Variable convention** — uppercase logical variables (`S`, `I`, `N`) for math values; lowercase program variables (`s`, `i`, `n`). They never clash: program variables lex as `Id`.
+- **Variable convention** — uppercase logical variables (`S`, `I`, `N`) for math values; lowercase program variables (`s`, `i`, `n`). They never clash: program variables lex as `Id` (K's sort for program identifiers, distinct from `Int`).
 - **`/Int` truncates toward zero; `divInt` floors toward −∞** — a repeatedly-flagged trap when moving between code and closed forms.
 
 The running example (the count-up sum loop — every formal skill builds on this claim):
@@ -57,15 +58,15 @@ Reading it: from any state with `i = I`, `s = S`, `n = N` and `I <=Int N +Int 1`
 
 You prove `A ⊢ φ ⇒ φ'` (the semantics `A` entails the rule) with seven rules. The first six are routine symbolic execution plus glue; the seventh, Circularity, is the whole point.
 
-| Rule | What it does |
-|---|---|
-| **Reflexivity** | `A ⊢ φ ⇒ φ` — the zero-step execution. This is precisely where guardedness bites: a circularity hypothesis is forbidden from closing a goal via Reflexivity alone. |
-| **Axiom** (+ framing) | Apply one semantic rule from `A` (with a substitution). Framing carries the untouched parts — the rest of `<k>`, unmentioned store bindings, the side constraint — unchanged around the step. |
-| **Transitivity** | Chain `A ⊢ φ ⇒ φ₁` and `A ⊢ φ₁ ⇒ φ'` into `A ⊢ φ ⇒ φ'`. |
-| **Consequence** | Strengthen the pre / weaken the post via a first-order implication discharged by SMT (Z3) or `[simplification]` lemmas. This is where arithmetic VCs are dispatched. |
-| **Case Analysis** | Split a goal whose precondition is a disjunction `φ ≡ φ₁ #Or φ₂` and prove each branch — e.g. the loop guard `true` vs `false`. |
-| **Abstraction** | Existentially quantify away variables that occur in the precondition but not the postcondition (e.g. overwritten initial values `∃S₀,I₀`). |
-| **Circularity** | Use a rule as its own hypothesis — next section. |
+| # | Rule | What it does |
+|---|---|---|
+| 1 | **Reflexivity** | `A ⊢ φ ⇒ φ` — the zero-step execution. This is precisely where guardedness bites: a circularity hypothesis is forbidden from closing a goal via Reflexivity alone. |
+| 2 | **Axiom** (+ framing) | Apply one semantic rule from `A` (with a substitution). Framing carries the untouched parts — the rest of `<k>`, unmentioned store bindings, the side constraint — unchanged around the step. |
+| 3 | **Transitivity** | Chain `A ⊢ φ ⇒ φ₁` and `A ⊢ φ₁ ⇒ φ'` into `A ⊢ φ ⇒ φ'`. |
+| 4 | **Consequence** | Strengthen the pre / weaken the post via a first-order implication discharged by SMT (Z3) or `[simplification]` lemmas. This is where arithmetic VCs are dispatched. |
+| 5 | **Case Analysis** | Split a goal whose precondition is a disjunction `φ ≡ φ₁ #Or φ₂` and prove each branch — e.g. the loop guard `true` vs `false`. |
+| 6 | **Abstraction** | Existentially quantify away variables that occur in the precondition but not the postcondition (e.g. overwritten initial values `∃S₀,I₀`). |
+| 7 | **Circularity** | Use a rule as its own hypothesis — next section. |
 
 K realizations: `seqstrict` heating/cooling ↔ the operand micro-steps of Axiom (heating/cooling rules are themselves auto-generated semantic rules, so they are applied *via* Axiom, not a separate proof rule); `#Or` ↔ Case Analysis; the SMT/`[simplification]` oracle ↔ Consequence; `...` ↔ framing (K's automatic cell-completion).
 
@@ -81,7 +82,7 @@ You may **assume the very rule you are proving** — *provided* the hypothesis i
 
 **It replaces the loop invariant.** Classically you invent `Inv` and prove it established, preserved, and implies-the-post. Here instead:
 
-- **Loops** — the loop's own claim, **generalized over accumulator and counter**, is the coinductive hypothesis. Evaluating the guard is the genuine step that earns it; the guard-true branch reaches the same loop in a shifted state and invokes the claim on itself (precondition re-checked, e.g. at `{S := S+I, I := I+1}`); the guard-false branch pins the counter (`I = N+1`) and the closed form collapses (empty sum `0`). The role the invariant played is now played by the closed-form expression in the claim's postcondition.
+- **Loops** — the loop's own claim, **generalized over accumulator and counter**, is the coinductive hypothesis. Evaluating the guard is the genuine step that earns it; the guard-true branch reaches the same loop in a shifted state and invokes the claim on itself (precondition re-checked, e.g. at `{S := S+I, I := I+1}`); the guard-false branch pins the counter (`I = N+1`) and the closed form collapses (the factor `N -Int I +Int 1` is `0` at `I = N+1`, so the added term is the empty sum `0`). The role the invariant played is now played by the closed-form expression in the claim's postcondition.
 - **Recursion** — a recursive function's back-edge is the recursive call, so the **function's own contract is the hypothesis**: `f(N) ⇒ result(N)` discharges its inner call `f(N−1)`. Guardedness is paid by the `call` step; the base case is the exit branch.
 - **Mutual recursion** — two contracts discharge *each other's* inner calls (every claim in the module is a hypothesis while proving any of them).
 - **Nested loops** — one claim per loop; the inner claim is used as a lemma by the outer.
@@ -154,6 +155,6 @@ Escalate per the pattern above: name the obligation, keep the claims well-formed
 
 ## Claim-shape catalog
 
-Pick the closest shape before writing any claim: see `references/claim-shapes.md`.
+Pick the closest shape before writing any claim: see `references/claim-shapes.md`. Its dispatch block routes by code structure — loop with an arithmetic closed form, preserved-relation loop, direct or mutual recursion, relational/structural postcondition, recursive value data — to the numbered shapes.
 
 *Derived from grosu/formal-verification-kit (MIT, Copyright (c) 2026 Grigore Rosu). See LICENSE and README credits.*

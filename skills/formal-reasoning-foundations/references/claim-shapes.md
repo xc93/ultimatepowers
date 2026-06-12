@@ -1,6 +1,17 @@
 # Claim-Shape Catalog
 
-Before writing any claim, **imitate the closest shape** below — closest by shape (invariant / VC pattern), not by topic. The reference pair is the count-up / count-down loop (shapes 02/03): the same contract proved with two genuinely different invariant shapes. Shapes are numbered by increasing complexity. Deep source for every shape: `examples/<nn>-<name>/mini-python-spec.k` in grosu/formal-verification-kit.
+Before writing any claim, **imitate the closest shape** below — closest by shape (invariant / VC pattern), not by topic; the dispatch block makes "closest" operational. The reference pair is the count-up / count-down loop (shapes 02/03): the same contract proved with two genuinely different invariant shapes. Shapes are numbered by increasing complexity. Deep source for every shape: `examples/<nn>-<name>/mini-python-spec.k` in grosu/formal-verification-kit.
+
+## Dispatch
+
+Route by the structure of the code and of what its postcondition must say — the invariant / VC pattern — never by problem domain:
+
+- **Loop with an arithmetic closed form** — an accumulator whose exit value is a polynomial in the inputs: count-up → **02**; count-down → **03**; the accumulator folds a list → **01**; two accumulators advance together → **04**.
+- **Preserved-relation loop** — no accumulator; the invariant is a relation between the variables held constant across iterations → **05**; a window narrowing over a sorted array → **10**.
+- **Direct recursion** — the function calls itself → **06**; non-polynomial result, so the closed form is a spec-only recursive symbol → **07**.
+- **Mutual recursion** — functions recurse through each other → **08**.
+- **Relational / structural postcondition** — the post states a relation, not a closed form: ∀-bound plus membership → **09**; index relation / permutation → **11**; sorted permutation with nested loops → **12**.
+- **Recursive value data** — the data itself is an inductive sort (a tree), whatever the control flow → **13**.
 
 ## Catalog
 
@@ -22,7 +33,9 @@ Before writing any claim, **imitate the closest shape** below — closest by sha
 
 Status legend (the frozen vocabulary): **machine-checked** — `kprove` returned `#Top` (none currently); **constructed** — written and reviewed, not machine-checked (the default); **constructed (escalation-bounded)** — abbreviated `esc:` above; some VCs additionally need a theory beyond the bundled tier and are stated as explicit `[ESCALATION BOUNDARY]` obligations, never faked `[trusted]`.
 
-## Function contract — (SUM), 02-sum-up
+Rows 02–06, 08, 09, 12, 13 have shape blocks below (headers numbered to match the catalog); the rows without one — 01, 07, 10, 11 — extend the nearest covered shape: 01 the loop pair 02/03, 07 the recursion shape 06 plus 04's spec-only-symbol move, 10 the loop shapes plus 12's `isSorted` vocabulary as a precondition, 11 the relational shapes 09/12.
+
+## 02 — Function contract — (SUM), 02-sum-up
 
 Use for any function with a closed-form result: define the function and call it on a symbolic argument inside `<k>`; the precondition goes in `requires`; the postcondition is the rewritten cells.
 
@@ -44,7 +57,9 @@ claim
   [all-path]
 ```
 
-## Loop circularity — (LOOP), 02-sum-up / 03-sum-down
+`<funcs> .Map => ?_:Map </funcs>`: the table starts empty because the claim's own program defines the function — the `def` adds the entry — and ends as *some* (existentially unconstrained) map. When the function is already loaded instead, omit the rewrite and match its entry, as the (REC) shape below does.
+
+## 02/03 — Loop circularity — (LOOP), 02-sum-up / 03-sum-down
 
 Use for every loop: a second claim for the loop alone, **generalized over accumulator and counter** (never pinned to entry values), the closed form in the postcondition, and the soundness side condition bounding the counter. Count-up (the running example of the skill):
 
@@ -76,7 +91,7 @@ claim
   [all-path]
 ```
 
-## Recursion circularity — (REC), 06-sum-recursive
+## 06 — Recursion circularity — (REC), 06-sum-recursive
 
 Use for a recursive function (no loop, so no loop-invariant claim): the circularity is the **recursive call's contract**, in call-with-continuation shape — the call at the head of `<k>` rewrites to its value, threading `CONT` through unchanged; `<store>`/`<stack>` net unchanged. The claim discharges its own inner call `sum_recursive(N-1)`; guardedness is paid by the `call` step.
 
@@ -96,7 +111,7 @@ claim
   [all-path]
 ```
 
-## Mutual recursion — (EVEN)/(ODD), 08-is-even-odd
+## 08 — Mutual recursion — (EVEN)/(ODD), 08-is-even-odd
 
 Use when functions recurse through each other: one contract claim per function, each `<funcs>` listing **both** definitions (they are mutually dependent), and each claim is the coinduction hypothesis discharging the *other's* inner call. `(EVEN)` reduces to `( N modInt 2 ==Int 0 ) ~> CONT`:
 
@@ -122,7 +137,7 @@ claim
 
 `(ODD)` is symmetric, reducing to `( N modInt 2 ==Int 1 ) ~> CONT` over the same two-function `<funcs>`.
 
-## Preserved-relation invariant — 05-gcd
+## 05 — Preserved-relation invariant — 05-gcd
 
 Use when the loop carries no accumulator and the invariant is a **relation preserved** across iterations: the spec-only math symbol *is* the invariant. Each iteration rewrites `(a, b)` to `(b, a % b)` and `gcd` is constant across that step. The base rule is bundled-dischargeable; the Euclid identity is inductive number theory — stated as a comment marked `[ESCALATION BOUNDARY]`, NOT `[simplification]`, NOT `[trusted]`.
 
@@ -138,7 +153,7 @@ claim
   [all-path]
 ```
 
-## Coupled accumulators — 04-fibonacci
+## 04 — Coupled accumulators — 04-fibonacci
 
 Use when two (or more) variables advance together: state the coupling in the LHS store — the entry values *are* the invariant. The computed quantity is itself defined by a recurrence, so declare a spec-only recursive symbol with `[simplification]` defining rules; the inductive step then discharges by unfolding the definition (definitional — no halving lemma).
 
@@ -165,7 +180,7 @@ claim
   [all-path]
 ```
 
-## ∀-quantified postcondition — 09-array-max
+## 09 — ∀-quantified postcondition — 09-array-max
 
 Use when the postcondition quantifies over a structure ("the result bounds every element, and is itself an element"): write the bounded `forall` and the membership as clean inductive spec-only functions, and bind the result to a `?`-existential pinned by `ensures` — the result cell is `result |-> (_:KResult => ?M:Int)`. No multiset is involved, so this stays in the bundled tier (no escalation).
 
@@ -179,15 +194,33 @@ rule inList(_, .List)                  => false
 rule inList(X:Int, ListItem(Y:Int) L)  => X ==Int Y orBool inList(X, L)
 ```
 
-The function claim closes with:
+The complete function claim, `(MAX)`:
 
 ```
-requires size(A) >=Int 1
-ensures  isUpperBound(A, ?M) andBool inList(?M, A)
-[all-path]
+claim
+  <k>
+    def array_max ( a ) : INDENT
+      largest = a[0]
+      i = 1
+      while i < len(a) : INDENT
+        if a[i] > largest : INDENT
+          largest = a[i]
+        DEDENT
+        i = i + 1
+      DEDENT
+      return largest
+    DEDENT
+    result = array_max ( A:List )
+  => .K ... </k>
+  <funcs> .Map => ?_:Map </funcs>
+  <store> result |-> (_:KResult => ?M:Int) </store>
+  <stack> .List </stack>
+  requires size(A) >=Int 1
+  ensures  isUpperBound(A, ?M) andBool inList(?M, A)
+  [all-path]
 ```
 
-## Relational spec + multiset + nested circularities — 12-insertion-sort
+## 12 — Relational spec + multiset + nested circularities — 12-insertion-sort
 
 Use when the postcondition is relational (a sorted permutation, not a closed form) and loops nest. Declare the relational vocabulary as spec-only functions — `bag(X) ==K bag(Y)` *is* "X is a permutation of Y":
 
@@ -216,7 +249,7 @@ ensures  size(?R) ==Int size(A)
 
 `(OUTER)` is the outer-loop circularity — invariant "prefix `[0,I)` sorted": `requires 1 <=Int I andBool I <=Int size(B) andBool isSorted(take(B, I))` — and it reuses `(INNER)`, the inner-loop "insert key into a hole" circularity (`isSorted(take(C, J +Int 1))`, `allGt(seg(C, J +Int 2, I +Int 1), KEY)`, and the hole-fill bag link `bag(C[J+1<-KEY]) ==K bag(?D[?J2+1<-KEY])`). The multiset / sorted-composition lemmas (L1, L2) the inner and outer steps need are written **as comments marked `[ESCALATION BOUNDARY]`** — deliberately *not* `rule ... [simplification]` and *not* `[trusted]`.
 
-## Recursive data structure — 13-tree-height
+## 13 — Recursive data structure — 13-tree-height
 
 Use when the data itself is recursive: model it as a first-class K **value sort** (`syntax Tree ::= "none" | node(Int, Tree, Tree)` — by-value structure and non-aliasing fall out for free), give the spec partial selectors and an inductive measure, and state the recursion circularity over the sort.
 
@@ -239,7 +272,7 @@ claim
    => h(T) ~> CONT </k>
 ```
 
-(`<funcs>` carries both `tree_height` and its helper `max2`; `<store>`/`<stack>` net unchanged, as in the (REC) shape above.) It discharges **both** child calls `tree_height(left(T))` and `tree_height(right(T))` — branching recursion, two back-edges, each earned by its own `call` step; the verified helper contract `(MAX2)` handles the combine step (`max2Int` is its spec-side math twin). The base case and the per-node step are bundled-tier clean; the structural-induction principle `(T-IND)` — lifting base + step to "every finite Tree" — is the stated `[ESCALATION BOUNDARY]`, routed to the μ-logic papers, not admitted as `[trusted]`.
+(`<funcs>` carries both `tree_height` and its helper `max2`; `<store>`/`<stack>` net unchanged, as in the (REC) shape above.) It discharges **both** child calls `tree_height(left(T))` and `tree_height(right(T))` — branching recursion, two back-edges, each earned by its own `call` step; the verified helper contract `(MAX2)` handles the combine step (`max2Int` is its spec-side math twin). The base case and the per-node step are bundled-tier clean; the structural-induction principle `(T-IND)` — lifting base + step to "every finite Tree" — is the stated `[ESCALATION BOUNDARY]`, not admitted as `[trusted]`. Routing: the source spec marks `(T-IND)` as "the documented recursive-data-structure escalation (LICS'19 / OOPSLA'20)" — it sits on **both** escalation-table rows at once, "induction / least-fixpoint `μ` reasoning, well-founded data" (LICS 2019) *and* "recursive heap predicates / linked structures" (OOPSLA 2020); for a value-sort tree they are one joint target, not alternatives.
 
 ## The sum-* cluster: one contract, three proofs
 
