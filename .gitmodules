@@ -1,0 +1,6 @@
+[submodule "reference/superpowers"]
+	path = reference/superpowers
+	url = https://github.com/obra/superpowers.git
+[submodule "reference/formal-verification-kit"]
+	path = reference/formal-verification-kit
+	url = https://github.com/grosu/formal-verification-kit.git
