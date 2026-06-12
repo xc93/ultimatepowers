@@ -37,7 +37,9 @@ digraph mode_select {
 }
 ```
 
-- **Trivial-diff fast path** — doc-only / rename-only / config-only / comment-only diffs: record "no formal content changed" in FINDINGS.md and approve. No claims are constructed. Deciding triviality is THIS skill's job — examine the diff hunks, not the file list alone.
+Tie-breaker: treat the review as whole-branch when the context is end-of-plan, finishing-a-development-branch, or pre-merge requesting-code-review, or when the git range spans multiple task commits; a review of a single task/commit is per-task.
+
+- **Trivial-diff fast path** — doc-only / rename-only / config-only / comment-only diffs: record "no formal content changed" in FINDINGS.md and approve. No claims are constructed. Deciding triviality is THIS skill's job — examine the diff hunks, not the file list alone. A mixed diff (some hunks trivial, some logic) never takes the fast path: the logic hunks get per-task/final-review treatment and the trivial hunks are noted as non-formal in FINDINGS.md.
 - **Per-task mode** — claims only for the functions/loops/branches the diff touches; reuse and extend the feature's existing semantics fragment (read the feature's `verification/` dir first); proofs at claim level — lemmas named, VC tables may be condensed; no `.k` file artifacts.
 - **Final-review mode** — whole-change scope; adds cross-function composition (Transitivity across function contracts) and deeper circularity discharge; produces PROOF.md; may emit full runnable `<mod>.k` / `<mod>-spec.k` artifacts (the machine-check escape hatch).
 
@@ -46,10 +48,10 @@ digraph mode_select {
 Create a TodoWrite entry for each numbered step.
 
 1. **Compute the diff.** `git diff --stat BASE..HEAD`, then `git diff BASE..HEAD`.
-2. **Classify the mode** (graph above). Trivial-diff fast path → write the "no formal content changed" FINDINGS.md entry, return approval, done.
+2. **Classify the mode** (graph above). Trivial-diff fast path → write the "no formal content changed" FINDINGS.md entry, then return the full report skeleton, not a bare approval: Strengths notes the trivial nature of the diff, Issues is empty, Assessment is "Ready to merge? Yes" with the standard status line and the artifact path. Done.
 3. **Gather intent.** Priority order, same as formalizing-code: plan/spec docs under `docs/ultimatepowers/` → commit messages → code comments/docstrings/tests. Missing or contradicted intent is a finding, never an assumption.
 4. **Formalize changed units** via `ultimatepowers:formalizing-code`, diff-scoped — in Final-review mode the diff is the whole branch; its expansion rule pulls callee contracts in contract-only.
-5. **Construct proofs** via `ultimatepowers:verifying-specs`. Proof depth per mode; deep mode only in Final-review mode (this skill is the caller that opts in).
+5. **Construct proofs** via `ultimatepowers:verifying-specs`. Deep mode is opt-in by the caller, and this skill is that caller: in Per-task mode, invoke verifying-specs WITHOUT deep mode — condensed VC tables are this reviewer's own presentation choice, not a verifying-specs setting; in Final-review mode, explicitly request deep mode (runnable `<mod>.k` / `<mod>-spec.k` artifacts + PROOF.md).
 6. **Map findings into review severities** (table below).
 7. **Persist artifacts** (layout below).
 8. **Return the review report** (format below).
@@ -69,12 +71,17 @@ Proof-derived classification → reviewer schema. The merge verdict follows `ult
 | Spec-difficulty signal (no clean precondition/invariant/closed form found) | Important |
 | Undischarged VC pointing at a plausible code bug | Important |
 | Test gap at a proof-exposed domain boundary | Important |
+| Resource boundary (e.g. recursion depth, measured) | Important if the bound is provably reachable on in-domain input, else Minor |
 | Intent-relevant implementation choice needing author confirmation (stability, duplicate policy, in-place mutation) | Minor + question for the author |
 | Cross-language portability hazard not affecting the current language (e.g. `(lo+hi)//2` overflow) | Minor |
 | Termination/performance recommendation (partial → total upgrade) | Minor |
 | Test-redundancy note | Minor, recommendation-only, machine-check-gated |
 | Positive finding / deliberate non-finding | Strengths section |
 | Capability gap `[ESCALATION BOUNDARY]` | "Verification limits" section — NOT an Issue, never blocks merge |
+
+Two verifying-specs classifications map onto existing rows: `needed code guard` follows the Missing-precondition row — Important, rising to Critical when the unguarded path is a reachable crash/violation on valid input (per the Critical rows above); `underspecified intent` follows the Spec-difficulty row — Important.
+
+**Fallback:** a sub-skill classification with no row here is treated as Important, and a row is added citing this rule — never weaker labels.
 
 **Capability gaps are kit limits, not code bugs.** They are reported under Verification limits with their open obligations specified, and never inflate severity.
 
@@ -90,7 +97,7 @@ docs/ultimatepowers/verification/YYYY-MM-DD-<topic>/
   <mod>.k, <mod>-spec.k — runnable K artifacts (deep mode only)
 ```
 
-`<topic>` is the feature slug from the active plan filename (`docs/ultimatepowers/plans/YYYY-MM-DD-<topic>.md`); for ad-hoc reviews, a short slug of the change description. The date is the date the dir was first created. **Per-task SDD reviews APPEND to the feature's existing dir** — FINDINGS.md gains a `## Task N — <date>` section, SPEC.md accretes claims — rather than creating one dir per task. Commit the artifacts with the review.
+`<topic>` is the feature slug from the active plan filename (`docs/ultimatepowers/plans/YYYY-MM-DD-<topic>.md`); for ad-hoc reviews, a deterministic slug: the first 3-5 words of the change description (or, absent one, the commit subject), lowercased and hyphenated (e.g. "Fix overflow in parser" → `fix-overflow-in-parser`). The date is the date the dir was first created. **Per-task SDD reviews APPEND to the feature's existing dir** — FINDINGS.md gains a `## Task N — <date>` section, SPEC.md accretes claims — rather than creating one dir per task. Commit the artifacts with the review.
 
 ## Report Format
 
@@ -114,16 +121,16 @@ Identical to the reviewer output in `requesting-code-review/code-reviewer.md`, p
 For each issue:
 - File:line reference
 - What's wrong
+- Formal evidence: <claim name / branch / VC / counterexample input>
 - Why it matters
 - How to fix (if not obvious)
-- Formal evidence: <claim name / branch / VC / counterexample input>
 
 ### Recommendations
 [Improvements for code quality, spec quality, or process]
 
 ### Verification limits
 [Each [ESCALATION BOUNDARY] with its open obligations specified, plus the trusted base
-(fragment adequacy; reachability metatheory; Z3/[simplification] oracle).
+(fragment adequacy; reachability metatheory; Z3/`[simplification]` (a K rule attribute) oracle).
 Not Issues — never block merge.]
 
 ### Assessment
