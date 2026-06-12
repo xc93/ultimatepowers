@@ -82,7 +82,7 @@ kast    --backend haskell <mod>-spec.k   # (optional) confirm claims parse to on
 kprove  <mod>-spec.k                     # discharge claims; expected: #Top (all proved)
 ```
 
-`#Top` upgrades `constructed` → `machine-checked`, and only then are conditional test removals safe.
+`#Top` upgrades `constructed` → `machine-checked`, and only then are conditional test removals safe. When the target language exceeds the bundled mini-imperative fragment family, runnable-artifact emission is itself an `[ESCALATION BOUNDARY]` obligation — state it; never invent K features to force a fit.
 
 ## Proof Write-Up Anatomy
 

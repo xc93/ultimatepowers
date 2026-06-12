@@ -41,11 +41,11 @@ Tie-breaker: treat the review as whole-branch when the context is end-of-plan, f
 
 - **Trivial-diff fast path** — doc-only / rename-only / config-only / comment-only diffs: record "no formal content changed" in FINDINGS.md and approve. No claims are constructed. Deciding triviality is THIS skill's job — examine the diff hunks, not the file list alone. A mixed diff (some hunks trivial, some logic) never takes the fast path: the logic hunks get per-task/final-review treatment and the trivial hunks are noted as non-formal in FINDINGS.md.
 - **Per-task mode** — claims only for the functions/loops/branches the diff touches; reuse and extend the feature's existing semantics fragment (read the feature's `verification/` dir first); proofs at claim level — lemmas named, VC tables may be condensed; no `.k` file artifacts.
-- **Final-review mode** — whole-change scope; adds cross-function composition (Transitivity across function contracts) and deeper circularity discharge; produces PROOF.md; may emit full runnable `<mod>.k` / `<mod>-spec.k` artifacts (the machine-check escape hatch).
+- **Final-review mode** — whole-change scope; adds cross-function composition (Transitivity across function contracts) and deeper circularity discharge; produces PROOF.md; may emit full runnable `<mod>.k` / `<mod>-spec.k` artifacts (the machine-check escape hatch). When the target language exceeds the bundled mini-imperative fragment family, runnable-artifact emission is itself an `[ESCALATION BOUNDARY]` obligation — state it; never invent K features to force a fit.
 
 ## The Workflow
 
-Create a TodoWrite entry for each numbered step.
+Create a TodoWrite entry for each numbered step (use TodoWrite where available; otherwise track steps explicitly).
 
 1. **Compute the diff.** `git diff --stat BASE..HEAD`, then `git diff BASE..HEAD`.
 2. **Classify the mode** (graph above). Trivial-diff fast path → write the "no formal content changed" FINDINGS.md entry, then return the full report skeleton, not a bare approval: Strengths notes the trivial nature of the diff, Issues is empty, Assessment is "Ready to merge? Yes" with the standard status line and the artifact path. Done.
@@ -78,6 +78,8 @@ Proof-derived classification → reviewer schema. The merge verdict follows `ult
 | Test-redundancy note | Minor, recommendation-only, machine-check-gated |
 | Positive finding / deliberate non-finding | Strengths section |
 | Capability gap `[ESCALATION BOUNDARY]` | "Verification limits" section — NOT an Issue, never blocks merge |
+
+Scope note: the Critical "proven intent violation" row means a violation of the changed unit's behavioral contract; promises made only in auxiliary prose (diagnostics wording, doc phrasing) classify as underspecified intent — Important at most.
 
 Two verifying-specs classifications map onto existing rows: `needed code guard` follows the Missing-precondition row — Important, rising to Critical when the unguarded path is a reachable crash/violation on valid input (per the Critical rows above); `underspecified intent` follows the Spec-difficulty row — Important.
 

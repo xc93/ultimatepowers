@@ -75,22 +75,24 @@ Task tool (general-purpose):
     - Why it matters
     - How to fix (if not obvious)
 
+    ### Recommendations
+    [Including any test-redundancy notes — recommendation only]
+
     ### Verification limits
     [ESCALATION BOUNDARY obligations and the trusted base. These are
     capability gaps, NOT code issues, and never block merge.]
-
-    ### Recommendations
-    [Including any test-redundancy notes — recommendation only]
 
     ### Assessment
 
     **Ready to merge?** [Yes | No | With fixes]
 
-    **Status of this analysis:** constructed, not machine-checked
-    [unless an actual `kprove` run returned `#Top` — never claim
-    otherwise]
+    **Reasoning:** [1-2 sentence technical assessment]
 
     **Artifacts:** [path to the verification directory you wrote]
+
+    **Status:** constructed, not machine-checked
+    [unless an actual `kprove` run returned `#Top` — never claim
+    otherwise]
 
     ## Critical Rules
 
@@ -114,4 +116,4 @@ Task tool (general-purpose):
 - `{BASE_SHA}` — starting commit
 - `{HEAD_SHA}` — ending commit
 
-**Reviewer returns:** Strengths, Issues (Critical / Important / Minor) with formal evidence, Verification limits, Recommendations, Assessment + analysis status + artifact path
+**Reviewer returns:** Strengths, Issues (Critical / Important / Minor) with formal evidence, Recommendations, Verification limits, Assessment + analysis status + artifact path

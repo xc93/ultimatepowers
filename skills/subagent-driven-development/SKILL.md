@@ -185,12 +185,14 @@ Spec reviewer: ✅ Spec compliant now
 
 [Dispatch code quality + formal verification reviewers in parallel]
 Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
+Formal reviewer: Per-task mode. Claims constructed for verify/repair paths; no counterexamples. Approved.
 
 [Implementer fixes]
 Implementer: Extracted PROGRESS_INTERVAL constant
 
-[Code reviewer reviews again]
+[Both reviewers review again]
 Code reviewer: ✅ Approved
+Formal reviewer: ✅ Approved (claims unaffected by the constant extraction)
 
 [Mark Task 2 complete]
 

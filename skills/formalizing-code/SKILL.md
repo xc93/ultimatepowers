@@ -30,7 +30,7 @@ Two modes — confirm which one applies before enumerating targets:
 
 ## The Workflow
 
-Create a TodoWrite entry for each numbered step.
+Create a TodoWrite entry for each numbered step (use TodoWrite where available; otherwise track steps explicitly).
 
 ### Step 1: Read the target — intent AND implementation
 
@@ -86,7 +86,7 @@ claim
   [all-path]
 ```
 
-The claim is its own coinduction hypothesis; the closed form in the postcondition plays the role the classical invariant used to.
+The claim is its own coinduction hypothesis; the closed form in the postcondition plays the role the classical invariant used to. Structural loops over finite data (list/tree folds) need no counter-bounding side condition — record "none needed" rather than inventing one.
 
 For recursion: a **function-contract circularity** over symbolic arguments — the contract discharges its own recursive call; the base case is the exit branch.
 
@@ -115,7 +115,7 @@ Required coverage — check every item for every in-scope function:
 
 **Stuck semantics = runtime exception.** A rule guard that cannot fire is the formal mirror of the crash — a division rule requiring `I2 =/=Int 0` that cannot fire IS the ZeroDivisionError.
 
-Report **positive findings** (a guard that enforces the spec's precondition is the code doing the right thing) and **deliberate non-findings** (stated because a reviewer will ask, with executed evidence where possible). Deep model: `grosu/formal-verification-kit/examples/02-sum-up/FINDINGS.md`.
+Report **positive findings** (a guard that enforces the spec's precondition is the code doing the right thing) and **deliberate non-findings** (stated because a reviewer will ask, with executed evidence where possible). Deep model: `grosu/formal-verification-kit/examples/02-sum-up/FINDINGS.md` (in the FVK repo or the `reference/formal-verification-kit/` submodule).
 
 ## Finding Classification Taxonomy
 

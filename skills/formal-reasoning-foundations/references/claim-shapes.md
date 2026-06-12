@@ -1,6 +1,6 @@
 # Claim-Shape Catalog
 
-Before writing any claim, **imitate the closest shape** below — closest by shape (invariant / VC pattern), not by topic; the dispatch block makes "closest" operational. The reference pair is the count-up / count-down loop (shapes 02/03): the same contract proved with two genuinely different invariant shapes. Shapes are numbered by increasing complexity. Deep source for every shape: `examples/<nn>-<name>/mini-python-spec.k` in grosu/formal-verification-kit.
+Before writing any claim, **imitate the closest shape** below — closest by shape (invariant / VC pattern), not by topic; the dispatch block makes "closest" operational. The reference pair is the count-up / count-down loop (shapes 02/03): the same contract proved with two genuinely different invariant shapes. Shapes are numbered by increasing complexity. Deep source for every shape: `examples/<nn>-<name>/mini-python-spec.k` in grosu/formal-verification-kit (in the FVK repo or the `reference/formal-verification-kit/` submodule).
 
 ## Dispatch
 
@@ -12,6 +12,7 @@ Route by the structure of the code and of what its postcondition must say — th
 - **Mutual recursion** — functions recurse through each other → **08**.
 - **Relational / structural postcondition** — the post states a relation, not a closed form: ∀-bound plus membership → **09**; index relation / permutation → **11**; sorted permutation with nested loops → **12**.
 - **Recursive value data** — the data itself is an inductive sort (a tree), whatever the control flow → **13**.
+- **Target outside the mini-imperative family** — shell pipelines, config DSLs, …: adapt the nearest structural shape (e.g. a pipeline as **09**'s list-fold) and state the fragment gap as an `[ESCALATION BOUNDARY]`.
 
 ## Catalog
 

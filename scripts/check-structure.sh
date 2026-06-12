@@ -3,35 +3,58 @@
 # Checks: SKILL.md frontmatter, namespace-ref resolution, stale superpowers refs,
 # manifest parse + path fields, hook executability, formal-verification surface.
 set -uo pipefail
-cd "$(cd "$(dirname "$0")/.." && pwd)"
+cd "$(cd "$(dirname "$0")/.." && pwd)" || exit 1
 FAIL=0
 err() { printf 'FAIL: %s\n' "$*"; FAIL=1; }
 ok()  { printf 'ok: %s\n' "$*"; }
 
-# 1. Frontmatter: exactly name + description on every SKILL.md; name == dir name
-for f in skills/*/SKILL.md; do
-  dir=$(basename "$(dirname "$f")")
+# 1. Every skills/*/ dir has a SKILL.md whose frontmatter starts at line 1
+#    and carries exactly name + description; name == dir name
+checked=0
+for d in skills/*/; do
+  dir=$(basename "$d")
+  f="${d}SKILL.md"
+  if [ ! -f "$f" ]; then err "skills/$dir/ has no SKILL.md"; continue; fi
+  [ "$(head -1 "$f")" = "---" ] || err "$f frontmatter not at line 1"
   fm=$(awk '/^---$/{n++; next} n==1{print} n>=2{exit}' "$f")
-  keys=$(printf '%s\n' "$fm" | grep -E '^[A-Za-z_-]+:' | cut -d: -f1 | sort | tr '\n' ' ')
+  keys=$(printf '%s\n' "$fm" | grep -E '^[^[:space:]:]+:' | cut -d: -f1 | sort | tr '\n' ' ')
   [ "$keys" = "description name " ] || err "$f frontmatter keys '$keys' (want exactly: description name)"
   name=$(printf '%s\n' "$fm" | sed -n 's/^name:[[:space:]]*//p')
   [ "$name" = "$dir" ] || err "$f frontmatter name '$name' != directory '$dir'"
+  checked=$((checked+1))
 done
-ok "frontmatter (name+description, name==dir) on $(ls skills | wc -l) skills"
+ok "frontmatter (name+description, name==dir) on $checked validated SKILL.md files"
 
 # 2. Every ultimatepowers:<x> reference resolves to skills/<x>/
-for r in $(grep -rhoE 'ultimatepowers:[a-z0-9-]+' skills/ hooks/ tests/ 2>/dev/null | sort -u); do
+#    (root markdown carries refs too — e.g. CLAUDE.md → ultimatepowers:writing-skills)
+ref_paths=(skills/ hooks/ tests/)
+for m in CLAUDE.md README.md GEMINI.md; do
+  if [ -f "$m" ]; then ref_paths+=("$m"); fi
+done
+refs=$(grep -rhoE 'ultimatepowers:[a-z0-9-]+' "${ref_paths[@]}")
+rc=$?
+[ "$rc" -le 1 ] || err "reference grep failed (rc=$rc)"
+for r in $(printf '%s\n' "$refs" | sort -u); do
   s=${r#ultimatepowers:}
-  [ -d "skills/$s" ] || err "reference '$r' does not resolve to skills/$s/"
+  if [ ! -d "skills/$s" ]; then
+    files=$(grep -rlnF -- "$r" "${ref_paths[@]}" | tr '\n' ' ')
+    err "reference '$r' does not resolve to skills/$s/ (in: ${files% })"
+  fi
 done
 ok "all ultimatepowers:<skill> references resolve"
 
-# 3. Zero superpowers: (colon-form) refs outside the allowlist
+# 3. Zero superpowers: (colon-form) refs outside the allowlist.
+#    The allowlist is root-anchored per the design spec ("zero dangling refs
+#    outside LICENSE/credits/submodules/research docs"): only the root-level
+#    README.md, CLAUDE.md, and LICENSE are exempt — nested files with those
+#    basenames are not.
 hits=$(grep -rn 'superpowers:' . \
   --exclude-dir=.git --exclude-dir=reference --exclude-dir=docs \
   --exclude-dir=node_modules --exclude-dir=.worktrees \
-  --exclude=LICENSE --exclude=README.md --exclude=CLAUDE.md \
-  --exclude=check-structure.sh 2>/dev/null)
+  --exclude=check-structure.sh)
+rc=$?
+[ "$rc" -le 1 ] || err "stale-reference grep failed (rc=$rc)"
+hits=$(printf '%s\n' "$hits" | grep -vE '^\./?(README\.md|CLAUDE\.md|LICENSE):' || true)
 [ -z "$hits" ] || err "stale superpowers: references: $hits"
 ok "no stale superpowers: references"
 

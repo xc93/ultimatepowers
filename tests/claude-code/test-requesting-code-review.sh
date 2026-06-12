@@ -94,7 +94,7 @@ OUTPUT_FILE="$TEST_PROJECT/claude-output.txt"
 
 PROMPT="I just finished a refactor. The change is between commits $BASE_SHA and $HEAD_SHA on the current branch.
 
-Use the ultimatepowers:requesting-code-review skill to review these changes before I merge. Follow the skill exactly: dispatch the code reviewer subagent with the template, give the subagent the SHA range, and report back what it found.
+Use the ultimatepowers:requesting-code-review skill to review these changes before I merge. Follow the skill exactly: dispatch both reviewer subagents (code reviewer + formal reviewer) with their templates, give the subagents the SHA range, and report back what they found.
 
 Print the reviewer's full output."
 
