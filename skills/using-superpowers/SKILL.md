@@ -118,4 +118,4 @@ Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
 
 ## Built-In Formal Review
 
-Code review in this plugin automatically includes formal verification analysis (ultimatepowers:formal-code-review). It runs inside the normal review flows — you never request it separately.
+Code review in this plugin always includes a formal verification reviewer (ultimatepowers:formal-code-review) as a parallel step. The review skills dispatch it automatically — you never need to request it separately.

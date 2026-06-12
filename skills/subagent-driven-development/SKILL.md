@@ -199,6 +199,7 @@ Code reviewer: ✅ Approved
 [After all tasks]
 [Final review via ultimatepowers:requesting-code-review — both reviewers, final-review mode]
 Final reviewer: All requirements met, ready to merge
+Formal reviewer: Final-review mode over the whole branch; no Critical findings. Ready to merge.
 
 Done!
 ```
@@ -224,13 +225,13 @@ Done!
 
 **Quality gates:**
 - Self-review catches issues before handoff
-- Two-stage review: spec compliance, then code quality
+- Staged review: spec compliance, then code quality + formal verification in parallel
 - Review loops ensure fixes actually work
 - Spec compliance prevents over/under-building
 - Code quality ensures implementation is well-built
 
 **Cost:**
-- More subagent invocations (implementer + 2 reviewers per task)
+- More subagent invocations (implementer + 3 reviewers per task)
 - Controller does more prep work (extracting all tasks upfront)
 - Review loops add iterations
 - But catches issues early (cheaper than debugging later)
@@ -239,7 +240,7 @@ Done!
 
 **Never:**
 - Start implementation on main/master branch without explicit user consent
-- Skip reviews (spec compliance OR code quality)
+- Skip reviews (spec compliance, code quality, or formal verification)
 - Proceed with unfixed issues
 - Dispatch multiple implementation subagents in parallel (conflicts)
 - Make subagent read plan file (provide full text instead)
