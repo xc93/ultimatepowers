@@ -6,7 +6,7 @@ Add ultimatepowers to the `plugin` array in your `opencode.json` (global or proj
 
 ```json
 {
-  "plugin": ["ultimatepowers@git+https://github.com/xc-math/ultimatepowers.git"]
+  "plugin": ["ultimatepowers@git+https://github.com/xc93/ultimatepowers.git"]
 }
 ```
 

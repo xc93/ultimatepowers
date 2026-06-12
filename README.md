@@ -18,14 +18,14 @@ Because the skills trigger automatically, you don't need to do anything special.
 
 Installation differs by harness. If you use more than one, install ultimatepowers separately for each.
 
-The canonical repository URL is `https://github.com/xc-math/ultimatepowers`. It appears in this README's install commands, the platform manifests, and `.opencode/INSTALL.md`; if hosting elsewhere, it is one search-and-replace away.
+The canonical repository URL is `https://github.com/xc93/ultimatepowers`. It appears in this README's install commands, the platform manifests, and `.opencode/INSTALL.md`; if hosting elsewhere, it is one search-and-replace away.
 
 ### Claude Code
 
 - Register the marketplace and install:
 
   ```text
-  /plugin marketplace add xc-math/ultimatepowers
+  /plugin marketplace add xc93/ultimatepowers
   /plugin install ultimatepowers@ultimatepowers-dev
   ```
 
@@ -53,12 +53,12 @@ Point the plugin system at the repo: the manifest is `.cursor-plugin/plugin.json
 ### Gemini CLI
 
 ```bash
-gemini extensions install https://github.com/xc-math/ultimatepowers
+gemini extensions install https://github.com/xc93/ultimatepowers
 ```
 
 ### OpenCode
 
-Follow `.opencode/INSTALL.md`: add the plugin array entry `ultimatepowers@git+https://github.com/xc-math/ultimatepowers.git` to your `opencode.json`, then restart OpenCode.
+Follow `.opencode/INSTALL.md`: add the plugin array entry `ultimatepowers@git+https://github.com/xc93/ultimatepowers.git` to your `opencode.json`, then restart OpenCode.
 
 ## The formal-verification delta (what ultimatepowers adds to superpowers)
 
