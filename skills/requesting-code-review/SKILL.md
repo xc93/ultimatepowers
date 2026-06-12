@@ -29,17 +29,24 @@ BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
 HEAD_SHA=$(git rev-parse HEAD)
 ```
 
-**2. Dispatch code reviewer subagent:**
+**2. Dispatch BOTH reviewer subagents in parallel (one message, two Task invocations):**
 
-Use Task tool with `general-purpose` type, fill template at `code-reviewer.md`
+- Conventional reviewer: Task tool with `general-purpose` type, fill template at `code-reviewer.md`
+- Formal verification reviewer: Task tool with `general-purpose` type, fill template at `formal-reviewer.md`
 
-**Placeholders:**
+Both templates take the same placeholders:
 - `{DESCRIPTION}` - Brief summary of what you built
 - `{PLAN_OR_REQUIREMENTS}` - What it should do
 - `{BASE_SHA}` - Starting commit
 - `{HEAD_SHA}` - Ending commit
 
-**3. Act on feedback:**
+**3. Merge the two reports:**
+
+- Combine into one report. Where both reviewers flag the same issue, keep one entry at the higher severity and keep the `Formal evidence:` line.
+- Keep the formal reviewer's "Verification limits" section verbatim — capability gaps are not code issues and never block merge.
+- One merged verdict: **Ready to merge?** is **No** if EITHER reviewer reports a Critical issue; "With fixes" while unresolved Important issues remain.
+
+**4. Act on feedback:**
 - Fix Critical issues immediately
 - Fix Important issues before proceeding
 - Note Minor issues for later
@@ -55,7 +62,7 @@ You: Let me request code review before proceeding.
 BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
 HEAD_SHA=$(git rev-parse HEAD)
 
-[Dispatch code reviewer subagent]
+[Dispatch code reviewer + formal reviewer subagents in parallel]
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
   PLAN_OR_REQUIREMENTS: Task 2 from docs/ultimatepowers/plans/deployment-plan.md
   BASE_SHA: a7981ec
@@ -67,6 +74,11 @@ HEAD_SHA=$(git rev-parse HEAD)
     Important: Missing progress indicators
     Minor: Magic number (100) for reporting interval
   Assessment: Ready to proceed
+
+[Formal reviewer returns]:
+  No formal content changed beyond verifyIndex() contract; claim constructed,
+  no counterexamples. Artifacts: docs/ultimatepowers/verification/2026-06-12-deployment/
+  Assessment: Ready to merge - Yes (constructed, not machine-checked)
 
 You: [Fix progress indicators]
 [Continue to Task 3]
@@ -91,6 +103,7 @@ You: [Fix progress indicators]
 
 **Never:**
 - Skip review because "it's simple"
+- Skip the formal reviewer because the change looks trivial (the trivial-diff fast path is the formal reviewer's decision, not yours)
 - Ignore Critical issues
 - Proceed with unfixed Important issues
 - Argue with valid technical feedback
@@ -100,4 +113,4 @@ You: [Fix progress indicators]
 - Show code/tests that prove it works
 - Request clarification
 
-See template at: requesting-code-review/code-reviewer.md
+See templates at: requesting-code-review/code-reviewer.md and requesting-code-review/formal-reviewer.md

@@ -115,3 +115,7 @@ The skill itself tells you which.
 ## User Instructions
 
 Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
+
+## Built-In Formal Review
+
+Code review in this plugin automatically includes formal verification analysis (ultimatepowers:formal-code-review). It runs inside the normal review flows — you never request it separately.

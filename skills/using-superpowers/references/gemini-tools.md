@@ -24,10 +24,11 @@ When a skill says to dispatch a named agent type, use `@generalist` with the ful
 
 | Skill instruction | Gemini CLI equivalent |
 |-------------------|----------------------|
-| `Task tool (ultimatepowers:implementer)` | `@generalist` with the filled `implementer-prompt.md` template |
-| `Task tool (ultimatepowers:spec-reviewer)` | `@generalist` with the filled `spec-reviewer-prompt.md` template |
-| `Task tool (ultimatepowers:code-reviewer)` | `@code-reviewer` (bundled agent) or `@generalist` with the filled review prompt |
-| `Task tool (ultimatepowers:code-quality-reviewer)` | `@generalist` with the filled `code-quality-reviewer-prompt.md` template |
+| Dispatch implementer subagent (`implementer-prompt.md`) | `@generalist` with the filled `implementer-prompt.md` template |
+| Dispatch spec reviewer subagent (`spec-reviewer-prompt.md`) | `@generalist` with the filled `spec-reviewer-prompt.md` template |
+| Dispatch code reviewer subagent (`code-reviewer.md`) | `@code-reviewer` (bundled agent) or `@generalist` with the filled review prompt |
+| Dispatch code quality reviewer subagent (`code-quality-reviewer-prompt.md`) | `@generalist` with the filled `code-quality-reviewer-prompt.md` template |
+| Dispatch formal verification reviewer subagent (`formal-reviewer.md`) | `@generalist` with the filled `formal-reviewer.md` template |
 | `Task tool (general-purpose)` with inline prompt | `@generalist` with your inline prompt |
 
 ### Prompt filling

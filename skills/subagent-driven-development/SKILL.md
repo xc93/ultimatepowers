@@ -5,11 +5,11 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+Execute plan by dispatching fresh subagent per task, with staged review after each: spec compliance review first, then code quality and formal verification reviews in parallel.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**Core principle:** Fresh subagent per task + staged review (spec first, then quality + formal verification in parallel) = high quality, fast iteration
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
@@ -36,7 +36,7 @@ digraph when_to_use {
 **vs. Executing Plans (parallel session):**
 - Same session (no context switch)
 - Fresh subagent per task (no context pollution)
-- Two-stage review after each task: spec compliance first, then code quality
+- Staged review after each task: spec compliance first, then code quality + formal verification in parallel
 - Faster iteration (no human-in-loop between tasks)
 
 ## The Process
@@ -54,15 +54,15 @@ digraph process {
         "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
         "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
         "Implementer subagent fixes spec gaps" [shape=box];
-        "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
-        "Code quality reviewer subagent approves?" [shape=diamond];
-        "Implementer subagent fixes quality issues" [shape=box];
+        "Dispatch code quality + formal verification reviewers in parallel (./code-quality-reviewer-prompt.md, ./formal-verification-reviewer-prompt.md)" [shape=box];
+        "Both reviewers approve?" [shape=diamond];
+        "Implementer subagent fixes reported issues" [shape=box];
         "Mark task complete in TodoWrite" [shape=box];
     }
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
     "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent for entire implementation" [shape=box];
+    "Final review: ultimatepowers:requesting-code-review over the whole branch (conventional + formal reviewers, final-review mode)" [shape=box];
     "Use ultimatepowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -74,15 +74,15 @@ digraph process {
     "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
     "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
     "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
-    "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
-    "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
-    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
+    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality + formal verification reviewers in parallel (./code-quality-reviewer-prompt.md, ./formal-verification-reviewer-prompt.md)" [label="yes"];
+    "Dispatch code quality + formal verification reviewers in parallel (./code-quality-reviewer-prompt.md, ./formal-verification-reviewer-prompt.md)" -> "Both reviewers approve?";
+    "Both reviewers approve?" -> "Implementer subagent fixes reported issues" [label="no"];
+    "Implementer subagent fixes reported issues" -> "Dispatch code quality + formal verification reviewers in parallel (./code-quality-reviewer-prompt.md, ./formal-verification-reviewer-prompt.md)" [label="re-review"];
+    "Both reviewers approve?" -> "Mark task complete in TodoWrite" [label="yes"];
     "Mark task complete in TodoWrite" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use ultimatepowers:finishing-a-development-branch";
+    "More tasks remain?" -> "Final review: ultimatepowers:requesting-code-review over the whole branch (conventional + formal reviewers, final-review mode)" [label="no"];
+    "Final review: ultimatepowers:requesting-code-review over the whole branch (conventional + formal reviewers, final-review mode)" -> "Use ultimatepowers:finishing-a-development-branch";
 }
 ```
 
@@ -124,6 +124,7 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 - `./implementer-prompt.md` - Dispatch implementer subagent
 - `./spec-reviewer-prompt.md` - Dispatch spec compliance reviewer subagent
 - `./code-quality-reviewer-prompt.md` - Dispatch code quality reviewer subagent
+- `./formal-verification-reviewer-prompt.md` - Dispatch formal verification reviewer subagent (in parallel with code quality)
 
 ## Example Workflow
 
@@ -153,8 +154,9 @@ Implementer: "Got it. Implementing now..."
 [Dispatch spec compliance reviewer]
 Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
 
-[Get git SHAs, dispatch code quality reviewer]
+[Get git SHAs, dispatch code quality + formal verification reviewers in parallel]
 Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
+Formal reviewer: Trivial-diff fast path (config-only change). Recorded in FINDINGS.md. Approved.
 
 [Mark Task 1 complete]
 
@@ -181,7 +183,7 @@ Implementer: Removed --json flag, added progress reporting
 [Spec reviewer reviews again]
 Spec reviewer: ✅ Spec compliant now
 
-[Dispatch code quality reviewer]
+[Dispatch code quality + formal verification reviewers in parallel]
 Code reviewer: Strengths: Solid. Issues (Important): Magic number (100)
 
 [Implementer fixes]
@@ -195,7 +197,7 @@ Code reviewer: ✅ Approved
 ...
 
 [After all tasks]
-[Dispatch final code-reviewer]
+[Final review via ultimatepowers:requesting-code-review — both reviewers, final-review mode]
 Final reviewer: All requirements met, ready to merge
 
 Done!
@@ -246,8 +248,9 @@ Done!
 - Accept "close enough" on spec compliance (spec reviewer found issues = not done)
 - Skip review loops (reviewer found issues = implementer fixes = review again)
 - Let implementer self-review replace actual review (both are needed)
-- **Start code quality review before spec compliance is ✅** (wrong order)
-- Move to next task while either review has open issues
+- **Start code quality or formal verification review before spec compliance is ✅** (wrong order)
+- Move to next task while any review has open issues
+- Skip the formal verification reviewer (it runs on every task — the trivial-diff fast path is its decision, not yours)
 
 **If subagent asks questions:**
 - Answer clearly and completely
@@ -269,7 +272,8 @@ Done!
 **Required workflow skills:**
 - **ultimatepowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **ultimatepowers:writing-plans** - Creates the plan this skill executes
-- **ultimatepowers:requesting-code-review** - Code review template for reviewer subagents
+- **ultimatepowers:requesting-code-review** - Reviewer prompt templates (code-reviewer.md, formal-reviewer.md)
+- **ultimatepowers:formal-code-review** - The formal analysis the formal verification reviewer performs
 - **ultimatepowers:finishing-a-development-branch** - Complete development after all tasks
 
 **Subagents should use:**
