@@ -120,8 +120,8 @@ Identical to the reviewer output in `requesting-code-review/code-reviewer.md`, p
 
 For each issue:
 - File:line reference
-- What's wrong
-- Formal evidence: <claim name / branch / VC / counterexample input>
+- What's wrong, as `input → observed vs expected` where applicable
+- Formal evidence: [claim / branch / VC / side condition behind it]
 - Why it matters
 - How to fix (if not obvious)
 
